@@ -1,0 +1,77 @@
+package me.gensan.android.readnfc;
+
+import me.gensan.android.samplenfc.R;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
+
+/**
+ * NFCの各種IDを設定。作りかけ放置
+ */
+public class NfcSettingActivity extends PreferenceActivity {
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			// version3.0 より前
+			addPreferencesFromResource(R.xml.nfcpreference);
+			EditTextPreference objectId = (EditTextPreference)getPreferenceScreen().findPreference("objectId");
+			objectId.setSummary(objectId.getText());
+			EditTextPreference fullId = (EditTextPreference)getPreferenceScreen().findPreference("fullId");
+			fullId.setSummary(fullId.getText());
+			EditTextPreference vacancyId = (EditTextPreference)getPreferenceScreen().findPreference("vacancyId");
+			vacancyId.setSummary(vacancyId.getText());
+			getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {				
+				@Override
+				public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+						String key) {
+					NfcSettingActivity.this.updateSummary();
+				}
+			});
+			updateSummary();
+		} else {
+			// version3.0 以降
+			getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefFragment()).commit();
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void updateSummary(){
+		// version3.0 以前
+		EditTextPreference objectId = (EditTextPreference)getPreferenceScreen().findPreference("objectId");
+		objectId.setSummary(objectId.getText());
+		EditTextPreference fullId = (EditTextPreference)getPreferenceScreen().findPreference("fullId");
+		fullId.setSummary(fullId.getText());
+		EditTextPreference vacancyId = (EditTextPreference)getPreferenceScreen().findPreference("vacancyId");
+		vacancyId.setSummary(vacancyId.getText());
+	}
+	
+	public static class PrefFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.nfcpreference);
+			updateSummary();
+		}
+		@Override
+		public void onSharedPreferenceChanged(
+				SharedPreferences sharedPreferences, String key) {
+			updateSummary();
+		}
+		
+		private void updateSummary(){
+			EditTextPreference objectId = (EditTextPreference)getPreferenceScreen().findPreference("objectId");
+			objectId.setSummary(objectId.getText());
+			EditTextPreference fullId = (EditTextPreference)getPreferenceScreen().findPreference("fullId");
+			fullId.setSummary(fullId.getText());
+			EditTextPreference vacancyId = (EditTextPreference)getPreferenceScreen().findPreference("vacancyId");
+			vacancyId.setSummary(vacancyId.getText());
+		}
+	}
+}

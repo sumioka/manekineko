@@ -1,0 +1,14 @@
+package me.gensan.android.readnfc;
+
+import me.gensan.android.samplenfc.R;
+import android.os.Bundle;
+import android.preference.PreferenceActivity;
+
+public class NfcSettingActivity extends PreferenceActivity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		addPreferencesFromResource(R.xml.nfcpreference);
+	}
+}

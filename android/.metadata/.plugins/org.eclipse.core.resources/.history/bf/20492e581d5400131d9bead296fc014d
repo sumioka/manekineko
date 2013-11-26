@@ -1,0 +1,5 @@
+package me.gensan.android.readnfc;
+
+public class PreferenceActivity extends{
+
+}

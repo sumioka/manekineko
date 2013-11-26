@@ -1,0 +1,202 @@
+package me.gensan.android.readnfc;
+
+import me.gensan.android.samplenfc.R;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentFilter.MalformedMimeTypeException;
+import android.nfc.NfcAdapter;
+import android.nfc.tech.IsoDep;
+import android.nfc.tech.MifareClassic;
+import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.Ndef;
+import android.nfc.tech.NdefFormatable;
+import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcB;
+import android.nfc.tech.NfcF;
+import android.nfc.tech.NfcV;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.parse.GetCallback;
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+
+public class SampleNFCActivity extends Activity {
+
+	private static final String TAG = "SampleNFCActivity";
+
+	private static final int MENU_FULL = 1;
+	private static final int MENU_VACANCY = 2;
+
+	private NfcAdapter mNfcAdapter;
+	private PendingIntent mPendingIntent;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		Parse.initialize(this, "GDq21LZhuIl7jfqn1mzKQLpD2vlh9xQ5MWQgFA2P",
+				"r7S62yjq28rscoIpM1fVJtzq12iPrBUz6P0RG1DT");
+
+		super.onCreate(savedInstanceState);
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		setContentView(R.layout.activity_sample_nfc);
+		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
+				|| NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+				|| NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
+			Log.d(TAG, "NFC DISCOVERD:" + action);
+			String idm = getIdm(getIntent());
+			if (idm != null) {
+				onIdm(idm);
+			}
+		}
+		mNfcAdapter = NfcAdapter.getDefaultAdapter(getApplicationContext());
+		mPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0,
+				new Intent(getApplicationContext(), getClass())
+						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mNfcAdapter != null) {
+			setNfcIntentFilter(this, mNfcAdapter, mPendingIntent);
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (mNfcAdapter != null) {
+			mNfcAdapter.disableForegroundDispatch(this);
+		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		String idm = getIdm(intent);
+		if (idm != null) {
+			onIdm(idm);
+		}
+	}
+
+	private void onIdm(String idm) {
+		TextView idmView = (TextView) findViewById(R.id.idm);
+		idmView.setText(idm);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, MENU_FULL, Menu.NONE, "満席に設定");
+		menu.add(Menu.NONE, MENU_VACANCY, Menu.NONE, "空き有に設定");
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == MENU_FULL) {
+			Log.i(TAG, "Set FULL manually.");
+			//updateShopState("", false);
+		} else if (item.getItemId() == MENU_VACANCY) {
+			Log.i(TAG, "Set VACANCY manually.");
+			//updateShopState("", true);
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void updateShopState(final String objectId, final boolean vacancy) {
+		ParseQuery<ParseObject> query = ParseQuery.getQuery("");
+		query.getInBackground(null, new GetCallback<ParseObject>() {
+			@Override
+			public void done(ParseObject shop, ParseException arg1) {
+				shop.put(objectId, vacancy);
+				shop.saveInBackground();
+			}
+		});
+	}
+
+	private String getIdm(Intent intent) {
+		String idm = null;
+		StringBuffer idmByte = new StringBuffer();
+		byte[] rawIdm = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID);
+		if (rawIdm != null) {
+			for (int i = 0; i < rawIdm.length; i++) {
+				idmByte.append(Integer.toHexString(rawIdm[i] & 0xff));
+			}
+			idm = idmByte.toString();
+		}
+		return idm;
+	}
+
+	private void setNfcIntentFilter(Activity activity, NfcAdapter nfcAdapter,
+			PendingIntent seder) {
+		IntentFilter typeNdef = new IntentFilter(
+				NfcAdapter.ACTION_NDEF_DISCOVERED);
+		try {
+			typeNdef.addDataType("*/*");
+		} catch (MalformedMimeTypeException e) {
+			e.printStackTrace();
+		}
+		IntentFilter httpNdef = new IntentFilter(
+				NfcAdapter.ACTION_NDEF_DISCOVERED);
+		httpNdef.addDataScheme("http");
+		IntentFilter[] filters = new IntentFilter[] { typeNdef, httpNdef };
+		String[][] techLists = new String[][] {
+				new String[] { IsoDep.class.getName() },
+				new String[] { NfcA.class.getName() },
+				new String[] { NfcB.class.getName() },
+				new String[] { NfcF.class.getName() },
+				new String[] { NfcV.class.getName() },
+				new String[] { Ndef.class.getName() },
+				new String[] { NdefFormatable.class.getName() },
+				new String[] { MifareClassic.class.getName() },
+				new String[] { MifareUltralight.class.getName() } };
+		nfcAdapter
+				.enableForegroundDispatch(activity, seder, filters, techLists);
+	}
+
+	
+	//NFCのTag lost取得に対し、NativeNfcTagのログ出力をLogcatをとる作戦だったが、
+	//android4.1以上からは別プロセスのログをとれないのでボツ
+	/*
+	class LogThread extends Thread {
+		@Override
+		public void run() {
+			try {
+				Log.e("hoge", "watch");
+				ArrayList<String> commandLine = new ArrayList<String>();
+				// コマンドの作成
+				commandLine.add("logcat");
+				commandLine.add("-v");
+				commandLine.add("long");
+				commandLine.add("-s");
+				commandLine.add("NativeNfcTag:D");
+
+				Process process = Runtime.getRuntime().exec(
+						commandLine.toArray(new String[commandLine.size()]));
+				BufferedReader bufferedReader = new BufferedReader(
+						new InputStreamReader(process.getInputStream()), 1024);
+				String line = null;
+				while ((line = bufferedReader.readLine()) != null) {
+					if (line.contains("Tag lost")) {
+						//
+					}
+				}
+				Log.e("hoge", "end");
+			} catch (IOException e) {
+				// 例外処理
+				e.printStackTrace();
+			}
+
+			Log.e("hoge", "finished");
+
+		}
+	}
+	*/
+}

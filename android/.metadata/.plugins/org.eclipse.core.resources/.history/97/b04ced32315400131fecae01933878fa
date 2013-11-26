@@ -1,0 +1,37 @@
+package me.gensan.android.readnfc;
+
+import me.gensan.android.samplenfc.R;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
+
+/**
+ * NFCの各種IDを設定。作りかけ放置
+ */
+public class NfcSettingActivity extends PreferenceActivity {
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// version3.0 より前
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+			addPreferencesFromResource(R.xml.nfcpreference);
+			// version3.0 以降
+		} else {
+			getFragmentManager().beginTransaction().replace(android.R.id.content, new prefFragment()).commit();
+		}
+	}
+	
+	public static class prefFragment extends PreferenceFragment {
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.nfcpreference);
+			EditTextPreference objectIdBox = (EditTextPreference)getPreferenceScreen().findPreference("objectId");
+			objectIdBox.setSummary("test");
+		}
+	}
+}

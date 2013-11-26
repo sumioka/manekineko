@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory>
+        <EditTextPreference android:title="Object ID" android:key="objectId" android:defaultValue="xaeOPV2RMx"/>
+        <EditTextPreference android:title="Full ID" android:key="fullId"/>
+        <EditTextPreference android:title="Vacancy ID" android:key="vacancyId"/>
+        
+    </PreferenceCategory>
+    
+
+</PreferenceScreen>

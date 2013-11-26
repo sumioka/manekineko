@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory><EditTextPreference android:title="Object ID  (店ごとのDB固有ID)" android:key="objectId" android:defaultValue="xaeOPV2RMx"/>
+        <EditTextPreference android:title="Full ID  (満席時のNFC-ID)" android:key="fullId" android:defaultValue="127077fad9af9b"/>
+        <EditTextPreference android:title="Vacancy ID  (空き有時のNFC-ID)" android:key="vacancyId" android:defaultValue="127077fad99c9b"/>
+        
+        <EditTextPreference android:key="recentNfcId" android:title="直近のNFC-ID"/>
+        
+    </PreferenceCategory>
+    
+
+</PreferenceScreen>
